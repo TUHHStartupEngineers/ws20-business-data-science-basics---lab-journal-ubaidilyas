@@ -25,9 +25,6 @@ This is an `.Rmd` file. It is plain text with special features. Any time you wri
 Last compiled: `r Sys.Date()`
 
 This section will cover the challenges provided at the end of Chapter 2.
-
-## Bar Graph for Sales by location
-
 ```{r}
 # Data Science at TUHH ------------------------------------------------------
 # SALES ANALYSIS ----
@@ -66,7 +63,12 @@ bike_orderlines_wrangled_tbl <- bike_orderlines_joined_tbl %>%
          everything()) %>%
   rename(bikeshop = name) %>%
   set_names(names(.) %>% str_replace_all("\\.", "_"))
+```
 
+## Bar Graph for Sales by location
+
+
+```{r plot2.1, fig.width=12, fig.height=7}
 #6.0 Chapter 2 Challenges ----
 
 #6.1 Sales by State ----
@@ -103,45 +105,7 @@ sales_by_state_tbl%>%
 
 
 ## Revenue by Year and Location
-
-```{r}
-# Data Science at TUHH ------------------------------------------------------
-# SALES ANALYSIS ----
-
-# 1.0 Load libraries ----
-library(tidyverse)
-library(lubridate)
-library(readxl)
-# 2.0 Importing Files ----
-bikes_tbl <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/bikes.xlsx")
-orderlines_tbl <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/orderlines.xlsx")
-bikeshops_tbl  <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/bikeshops.xlsx")
-
-# 4.0 Joining Data ----
-left_join(orderlines_tbl, bikes_tbl, by = c("product.id" = "bike.id"))%>%
-  invisible()
-bike_orderlines_joined_tbl <- orderlines_tbl %>%
-  left_join(bikes_tbl, by = c("product.id" = "bike.id")) %>%
-  left_join(bikeshops_tbl, by = c("customer.id" = "bikeshop.id"))
-# 5.0 Wrangling Data ----
-bike_orderlines_joined_tbl %>% 
-  select(category) %>%
-  filter(str_detect(category, "^Mountain")) %>% 
-  unique()%>%
-  invisible()
-bike_orderlines_wrangled_tbl <- bike_orderlines_joined_tbl %>%
-  separate(col    = category,
-           into   = c("category.1", "category.2", "category.3"),
-           sep    = " - ") %>%
-  mutate(total.price = price * quantity) %>%
-  select(-...1, -gender) %>%
-  select(-ends_with(".id")) %>%
-  bind_cols(bike_orderlines_joined_tbl %>% select(order.id)) %>% 
-  select(order.id, contains("order"), contains("model"), contains("category"),
-         price, quantity, total.price,
-         everything()) %>%
-  rename(bikeshop = name) %>%
-  set_names(names(.) %>% str_replace_all("\\.", "_"))
+```{r plot2.2, fig.width=12, fig.height=7}
 
 #6.0 Chapter 2 Challenges ----
 #6.2 Sales by Year and State ----
