@@ -1,34 +1,3 @@
----
-title: "Journal (reproducible report)"
-author: "Ubaid Ilyas"
-date: "2020-11-05"
-output:
-  html_document:
-    toc: true
-    toc_float: true
-    collapsed: false
-    number_sections: true
-    toc_depth: 3
-    code_folding: hide
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
-```
-
-**IMPORTANT:** You can delete everything in here and start fresh. You might want to start by not deleting anything above this line until you know what that stuff is doing.
-
-This is an `.Rmd` file. It is plain text with special features. Any time you write just like this, it will be compiled to normal text in the website. If you put a \# in front of your text, it will create a top level-header.
-
-# Chapter 2 Challenges
-
-Last compiled: `r Sys.Date()`
-
-This section will cover the challenges provided at the end of Chapter 2.
-
-## Bar Graph for Sales by location
-
-```{r}
 # Data Science at TUHH ------------------------------------------------------
 # SALES ANALYSIS ----
 
@@ -42,8 +11,7 @@ orderlines_tbl <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike
 bikeshops_tbl  <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/bikeshops.xlsx")
 
 # 4.0 Joining Data ----
-left_join(orderlines_tbl, bikes_tbl, by = c("product.id" = "bike.id"))%>%
-  invisible()
+left_join(orderlines_tbl, bikes_tbl, by = c("product.id" = "bike.id"))
 bike_orderlines_joined_tbl <- orderlines_tbl %>%
   left_join(bikes_tbl, by = c("product.id" = "bike.id")) %>%
   left_join(bikeshops_tbl, by = c("customer.id" = "bikeshop.id"))
@@ -51,8 +19,7 @@ bike_orderlines_joined_tbl <- orderlines_tbl %>%
 bike_orderlines_joined_tbl %>% 
   select(category) %>%
   filter(str_detect(category, "^Mountain")) %>% 
-  unique() %>%
-  invisible()
+  unique()
 bike_orderlines_wrangled_tbl <- bike_orderlines_joined_tbl %>%
   separate(col    = category,
            into   = c("category.1", "category.2", "category.3"),
@@ -99,51 +66,6 @@ sales_by_state_tbl%>%
     y = "Revenue"
   )
 
-```
-
-
-## Revenue by Year and Location
-
-```{r}
-# Data Science at TUHH ------------------------------------------------------
-# SALES ANALYSIS ----
-
-# 1.0 Load libraries ----
-library(tidyverse)
-library(lubridate)
-library(readxl)
-# 2.0 Importing Files ----
-bikes_tbl <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/bikes.xlsx")
-orderlines_tbl <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/orderlines.xlsx")
-bikeshops_tbl  <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/bikeshops.xlsx")
-
-# 4.0 Joining Data ----
-left_join(orderlines_tbl, bikes_tbl, by = c("product.id" = "bike.id"))%>%
-  invisible()
-bike_orderlines_joined_tbl <- orderlines_tbl %>%
-  left_join(bikes_tbl, by = c("product.id" = "bike.id")) %>%
-  left_join(bikeshops_tbl, by = c("customer.id" = "bikeshop.id"))
-# 5.0 Wrangling Data ----
-bike_orderlines_joined_tbl %>% 
-  select(category) %>%
-  filter(str_detect(category, "^Mountain")) %>% 
-  unique()%>%
-  invisible()
-bike_orderlines_wrangled_tbl <- bike_orderlines_joined_tbl %>%
-  separate(col    = category,
-           into   = c("category.1", "category.2", "category.3"),
-           sep    = " - ") %>%
-  mutate(total.price = price * quantity) %>%
-  select(-...1, -gender) %>%
-  select(-ends_with(".id")) %>%
-  bind_cols(bike_orderlines_joined_tbl %>% select(order.id)) %>% 
-  select(order.id, contains("order"), contains("model"), contains("category"),
-         price, quantity, total.price,
-         everything()) %>%
-  rename(bikeshop = name) %>%
-  set_names(names(.) %>% str_replace_all("\\.", "_"))
-
-#6.0 Chapter 2 Challenges ----
 #6.2 Sales by Year and State ----
 sales_by_year_location_tbl<- bike_orderlines_wrangled_tbl %>%
   select(order_date, total_price, location) %>%
@@ -171,7 +93,3 @@ sales_by_year_location_tbl %>%
     subtitle = "Each product category has an upward trend",
     fill = "State" # Changes the legend name
   )
-
-```
-
-
