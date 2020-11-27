@@ -20,6 +20,7 @@ knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 
 This is an `.Rmd` file. It is plain text with special features. Any time you write just like this, it will be compiled to normal text in the website. If you put a \# in front of your text, it will create a top level-header.
 
+
 # Chapter 2 Challenges
 
 Last compiled: `r Sys.Date()`
@@ -136,6 +137,57 @@ sales_by_year_location_tbl %>%
     fill = "State" # Changes the legend name
   )
 
+```
+
+# Chapter 3 Challenges
+Last compiled: `r Sys.Date()`
+
+This section will cover the challenges provided at the end of Chapter 3.
+
+## Data via API
+```{r tibble3.1}
+#1.0 Load libraries ----
+library(httr)
+library(stringr)
+library(tidyverse) 
+library(rvest)     
+library(jsonlite)  
+library(scales)
+
+#2.0 Getting Data via API
+  resp<- GET("https://pokeapi.co/api/v2/ability/?limit=50&offset=20")
+#3.0 Coversion to Tibble
+    rawToChar(resp$content) %>%
+    fromJSON() %>% 
+    .[[4]] %>% 
+    .[] %>% 
+    as_tibble()%>%
+    head(10)
+```
+
+## DB based on Model and Price
+```{r tibble3.2}
+#4.0 Read in the HTML for the Entire Webpage
+html <- read_html("https://www.rosebikes.de/fahrr%C3%A4der/kinder")
+#5.0 Web Scraping for Model Names
+model_name <-  html %>% 
+  html_nodes(css = ".catalog-product-tile__title") %>%
+  html_text() %>%
+  stringr::str_replace_all(pattern = "\n\n", replacement = " ") %>%
+  stringr::str_extract("(?<=\\n).*(?=\\n)")
+#6.0 Web Scraping for Prices
+price <-  html %>% 
+  html_nodes(css = ".product-tile-price__wrapper") %>%
+  html_text()%>%
+  stringr::str_extract(pattern = "[0-9]+") %>% 
+  as.numeric() %>%
+  dollar(big.mark = ".", 
+         decimal.mark = ",", 
+         prefix = "", 
+         suffix = " €")
+#7.0 Coversion to Tibble
+tibble(model_name,price) %>% 
+  head(10)
 ```
 
 

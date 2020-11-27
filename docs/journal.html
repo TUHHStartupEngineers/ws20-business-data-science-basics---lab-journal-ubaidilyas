@@ -426,7 +426,7 @@ div.tocify {
 <p>This is an <code>.Rmd</code> file. It is plain text with special features. Any time you write just like this, it will be compiled to normal text in the website. If you put a # in front of your text, it will create a top level-header.</p>
 <div id="chapter-2-challenges" class="section level1">
 <h1><span class="header-section-number">1</span> Chapter 2 Challenges</h1>
-<p>Last compiled: 2020-11-26</p>
+<p>Last compiled: 2020-11-27</p>
 <p>This section will cover the challenges provided at the end of Chapter 2.</p>
 <pre class="r"><code># Data Science at TUHH ------------------------------------------------------
 # SALES ANALYSIS ----
@@ -531,6 +531,81 @@ sales_by_year_location_tbl %&gt;%
     fill = &quot;State&quot; # Changes the legend name
   )</code></pre>
 <p><img src="journal_files/figure-html/plot2.2-1.png" width="1152" /></p>
+</div>
+</div>
+<div id="chapter-3-challenges" class="section level1">
+<h1><span class="header-section-number">2</span> Chapter 3 Challenges</h1>
+<p>Last compiled: 2020-11-27</p>
+<p>This section will cover the challenges provided at the end of Chapter 3.</p>
+<div id="data-via-api" class="section level2">
+<h2><span class="header-section-number">2.1</span> Data via API</h2>
+<pre class="r"><code>#1.0 Load libraries ----
+library(httr)
+library(stringr)
+library(tidyverse) 
+library(rvest)     
+library(jsonlite)  
+library(scales)
+
+#2.0 Getting Data via API
+  resp&lt;- GET(&quot;https://pokeapi.co/api/v2/ability/?limit=50&amp;offset=20&quot;)
+#3.0 Coversion to Tibble
+    rawToChar(resp$content) %&gt;%
+    fromJSON() %&gt;% 
+    .[[4]] %&gt;% 
+    .[] %&gt;% 
+    as_tibble()%&gt;%
+    head(10)</code></pre>
+<pre><code>## # A tibble: 10 x 2
+##    name         url                                  
+##    &lt;chr&gt;        &lt;chr&gt;                                
+##  1 suction-cups https://pokeapi.co/api/v2/ability/21/
+##  2 intimidate   https://pokeapi.co/api/v2/ability/22/
+##  3 shadow-tag   https://pokeapi.co/api/v2/ability/23/
+##  4 rough-skin   https://pokeapi.co/api/v2/ability/24/
+##  5 wonder-guard https://pokeapi.co/api/v2/ability/25/
+##  6 levitate     https://pokeapi.co/api/v2/ability/26/
+##  7 effect-spore https://pokeapi.co/api/v2/ability/27/
+##  8 synchronize  https://pokeapi.co/api/v2/ability/28/
+##  9 clear-body   https://pokeapi.co/api/v2/ability/29/
+## 10 natural-cure https://pokeapi.co/api/v2/ability/30/</code></pre>
+</div>
+<div id="db-based-on-model-and-price" class="section level2">
+<h2><span class="header-section-number">2.2</span> DB based on Model and Price</h2>
+<pre class="r"><code>#4.0 Read in the HTML for the Entire Webpage
+html &lt;- read_html(&quot;https://www.rosebikes.de/fahrr%C3%A4der/kinder&quot;)
+#5.0 Web Scraping for Model Names
+model_name &lt;-  html %&gt;% 
+  html_nodes(css = &quot;.catalog-product-tile__title&quot;) %&gt;%
+  html_text() %&gt;%
+  stringr::str_replace_all(pattern = &quot;\n\n&quot;, replacement = &quot; &quot;) %&gt;%
+  stringr::str_extract(&quot;(?&lt;=\\n).*(?=\\n)&quot;)
+#6.0 Web Scraping for Prices
+price &lt;-  html %&gt;% 
+  html_nodes(css = &quot;.product-tile-price__wrapper&quot;) %&gt;%
+  html_text()%&gt;%
+  stringr::str_extract(pattern = &quot;[0-9]+&quot;) %&gt;% 
+  as.numeric() %&gt;%
+  dollar(big.mark = &quot;.&quot;, 
+         decimal.mark = &quot;,&quot;, 
+         prefix = &quot;&quot;, 
+         suffix = &quot; €&quot;)
+#7.0 Coversion to Tibble
+tibble(model_name,price) %&gt;% 
+  head(10)</code></pre>
+<pre><code>## # A tibble: 10 x 2
+##    model_name             price
+##    &lt;chr&gt;                  &lt;chr&gt;
+##  1 Early Rider Seeker 16  449 €
+##  2 Early Rider Belter 16  419 €
+##  3 ROSE NOOB              159 €
+##  4 Early Rider Belter 14  399 €
+##  5 Early Rider Seeker 20  699 €
+##  6 Early Rider Belter 24  759 €
+##  7 Early Rider Seeker 24  899 €
+##  8 Early Rider Seeker 14  399 €
+##  9 Early Rider Belter 20  549 €
+## 10 Early Rider Charger 12 189 €</code></pre>
 </div>
 </div>
 
