@@ -21,9 +21,9 @@ patent_tb <- vroom(
   delim      = "\t", 
   col_types  = col_types_patent,
   na         = c("", "NA", "NULL")
-) 
+)%>% setDT() 
 
-patent_tb_required <- patent_tb %>% select(id, number, date, title)
+#patent_tb_required <- patent_tb %>% select(id, number, date, title)
 
 ### Generating data for assignee----
 col_types_assignee <- list(
@@ -41,12 +41,7 @@ assignee_dt <- vroom(
   na         = c("", "NA", "NULL")
 ) %>% setDT()
 
-assignee_tb <- vroom(
-  file       = "assignee.tsv", 
-  delim      = "\t", 
-  col_types  = col_types_assignee,
-  na         = c("", "NA", "NULL")
-)
+
 ### Generating data for patent_assignee----
 
 col_types_patent_assignee <- list(
@@ -62,12 +57,6 @@ patent_assignee_dt <- vroom(
   na         = c("", "NA", "NULL")
 ) %>% setDT()
 
-patent_assignee_tb <- vroom(
-  file       = "patent_assignee.tsv", 
-  delim      = "\t", 
-  col_types  = col_types_patent_assignee,
-  na         = c("", "NA", "NULL")
-) 
 ### Generating data for uspc----
 
 col_types_uspc <- list(
@@ -84,22 +73,60 @@ uspc_tb <- vroom(
   delim      = "\t", 
   col_types  = col_types_uspc,
   na         = c("", "NA", "NULL")
-) 
+) %>% setDT() 
 
 
 ### Challenge No.1 ----
 setnames(assignee_dt,"id","assignee_id")
-combined_data <- merge(x = assignee_dt, y = patent_assignee_dt, 
+combined_data_c1 <- merge(x = assignee_dt, y = patent_assignee_dt, 
                        by    = "assignee_id", 
                        all.x = TRUE, 
                        all.y = FALSE)
 
-challenge_1<- combined_data [type == 2 & !is.na(organization), .N, by = organization][
+challenge_1<- combined_data_c1 [type == 2 & !is.na(organization), .N, by = organization][
   , max(N), by = organization][
     order(V1, decreasing = TRUE)] %>% 
   head(10)
 
 ### Challenge No.2 ----
+
+patent_2019_tb<- patent_tb[ lubridate::year(date) == "2019"]
+
+setnames(assignee_dt,"id","assignee_id")
+combined_data_c2 <- merge(x = assignee_dt, y = patent_assignee_dt, 
+                          by    = "assignee_id", 
+                          all.x = TRUE, 
+                          all.y = FALSE)
+
+setnames(patent_2019_tb,"id","patent_id")
+
+
+combined_data_c2b <- merge(x = combined_data_c2, y = patent_2019_tb, 
+                          by    = "patent_id", 
+                          all.x = TRUE, 
+                          all.y = FALSE)
+
+
+challenge_2 <- combined_data_c2b [lubridate::year(date) == "2019" & !is.na(organization), .N, by = organization][
+  , max(N), by = organization][
+    order(V1, decreasing = TRUE)] %>% 
+  head(10)
+
+### Challenge No.3 ----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 patent_tb_required <- patent_tb %>% select(id, number, date, title)
 
 patent_arranged_tb<-patent_tb %>% select(id, number, date, title) %>%
