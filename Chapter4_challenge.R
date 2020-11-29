@@ -1,7 +1,13 @@
+#1.0 Loading Libraries ----
+
 library(vroom)
 library(tidyverse)
 library(data.table)
-### Generating data for ----
+
+#2.0 Generating Data and Converting to DT ----
+
+#2.1 For patent ----
+
 col_types_patent <- list(
   id = col_character(),
   type = col_character(),
@@ -23,9 +29,8 @@ patent_tb <- vroom(
   na         = c("", "NA", "NULL")
 )%>% setDT() 
 
-#patent_tb_required <- patent_tb %>% select(id, number, date, title)
+#2.2 For assignee----
 
-### Generating data for assignee----
 col_types_assignee <- list(
   id = col_character(),
   type = col_integer(),
@@ -42,7 +47,7 @@ assignee_dt <- vroom(
 ) %>% setDT()
 
 
-### Generating data for patent_assignee----
+#2.3 For patent_assignee----
 
 col_types_patent_assignee <- list(
   patent_id = col_character(),
@@ -57,7 +62,7 @@ patent_assignee_dt <- vroom(
   na         = c("", "NA", "NULL")
 ) %>% setDT()
 
-### Generating data for uspc----
+#2.4 For uspc----
 
 col_types_uspc <- list(
   uuid = col_character(),
@@ -76,88 +81,50 @@ uspc_tb <- vroom(
 ) %>% setDT() 
 
 
-### Challenge No.1 ----
+#3.0 Challenge No.1 ----
+
+#Renaming and Merging
 setnames(assignee_dt,"id","assignee_id")
 combined_data_c1 <- merge(x = assignee_dt, y = patent_assignee_dt, 
                        by    = "assignee_id", 
                        all.x = TRUE, 
                        all.y = FALSE)
-
-challenge_1<- combined_data_c1 [type == 2 & !is.na(organization), .N, by = organization][
+#Data Extraction
+combined_data_c1 [type == 2 & !is.na(organization), .N, by = organization][
   , max(N), by = organization][
     order(V1, decreasing = TRUE)] %>% 
   head(10)
 
-### Challenge No.2 ----
+#4.0 Challenge No.2 ----
 
+#Renaming and Merging
 patent_2019_tb<- patent_tb[ lubridate::year(date) == "2019"]
-
-setnames(assignee_dt,"id","assignee_id")
-combined_data_c2 <- merge(x = assignee_dt, y = patent_assignee_dt, 
-                          by    = "assignee_id", 
-                          all.x = TRUE, 
-                          all.y = FALSE)
 
 setnames(patent_2019_tb,"id","patent_id")
 
-
-combined_data_c2b <- merge(x = combined_data_c2, y = patent_2019_tb, 
+combined_data_c2 <- merge(x = combined_data_c1, y = patent_2019_tb, 
                           by    = "patent_id", 
                           all.x = TRUE, 
                           all.y = FALSE)
 
-
-challenge_2 <- combined_data_c2b [lubridate::year(date) == "2019" & !is.na(organization), .N, by = organization][
+#Data Extraction
+combined_data_c2 [lubridate::year(date) == "2019" & !is.na(organization), .N, by = organization][
   , max(N), by = organization][
     order(V1, decreasing = TRUE)] %>% 
   head(10)
 
-### Challenge No.3 ----
+#5.0 Challenge No.3 ----
 
+#Renaming and Merging
+memory.limit(size = 150000) #due to large vector size
 
+combined_data_c3<-merge(x = combined_data_c1, y = uspc_tb, 
+      by    = "patent_id", 
+      all.x = TRUE, 
+      all.y = FALSE)
 
-
-
-
-
-
-
-
-
-
-
-
-patent_tb_required <- patent_tb %>% select(id, number, date, title)
-
-patent_arranged_tb<-patent_tb %>% select(id, number, date, title) %>%
-  mutate() %>%
-  separate("date", c("year", "month", "day"), sep = "-") 
-
-a<-d%>% mutate()%>%separate("date", c("Year", "Month", "Day"), sep = "-")
-
-patent_tb_required %>% summarise(across(everything(), ~sum(is.na(.))))
-
-smaller_table <- 
-  patent_tb %>% sample_n(6000000) 
-
-patent_tb_required <- smaller_table %>% select(id, number, date, title)
-
-setDT(patent_tb_required)
-ilyas<- patent_assignee_dt%>% group_by(location_id)
-
-
-
-us_company_dt %>%
-  summarise(across(everything(), ~sum(is.na(.))))
-patent_assignee_tbl %>%
-  summarise(across(everything(), ~sum(is.na(.))))
-
-assignee_tbl[, .N, by="id"]
-
-assignee_tbl_dt[type == 2]
-
-
-most_patents_tbl<- assignee_tbl %>%
-  
-  # By argument not necessary, because both tibbles share the same column names
-  left_join(y = patent_assignee_tbl, by = c("order_id" = "order_id"))
+#Data Extraction
+combined_data_c3 [!is.na(patent_id) & !is.na(mainclass_id), .N, by = mainclass_id][
+  , max(N), by = mainclass_id][
+    order(V1, decreasing = TRUE)] %>% 
+  head(5)

@@ -21,13 +21,12 @@ knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 This is an `.Rmd` file. It is plain text with special features. Any time you write just like this, it will be compiled to normal text in the website. If you put a \# in front of your text, it will create a top level-header.
 
 
-# Chapter 2 Challenges
+#1 Chapter 2 Challenges
 
 Last compiled: `r Sys.Date()`
 
 This section will cover the challenges provided at the end of Chapter 2.
-```{r}
-# Data Science at TUHH ------------------------------------------------------
+```{r chap2}
 # SALES ANALYSIS ----
 
 # 1.0 Load libraries ----
@@ -35,9 +34,9 @@ library(tidyverse)
 library(lubridate)
 library(readxl)
 # 2.0 Importing Files ----
-bikes_tbl <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/bikes.xlsx")
-orderlines_tbl <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/orderlines.xlsx")
-bikeshops_tbl  <- read_excel("/Users/UBIL1/Desktop/TUHH/business/00_data/01_bike_sales/01_raw_data/bikeshops.xlsx")
+bikes_tbl <- read_excel("bikes.xlsx")
+orderlines_tbl <- read_excel("orderlines.xlsx")
+bikeshops_tbl  <- read_excel("bikeshops.xlsx")
 
 # 4.0 Joining Data ----
 left_join(orderlines_tbl, bikes_tbl, by = c("product.id" = "bike.id"))%>%
@@ -66,7 +65,7 @@ bike_orderlines_wrangled_tbl <- bike_orderlines_joined_tbl %>%
   set_names(names(.) %>% str_replace_all("\\.", "_"))
 ```
 
-## Bar Graph for Sales by location
+##1.1 Bar Graph for Sales by Location
 
 
 ```{r plot2.1, fig.width=12, fig.height=7}
@@ -105,7 +104,7 @@ sales_by_state_tbl%>%
 ```
 
 
-## Revenue by Year and Location
+##1.2 Revenue by Year and Location
 ```{r plot2.2, fig.width=12, fig.height=7}
 
 #6.0 Chapter 2 Challenges ----
@@ -139,12 +138,12 @@ sales_by_year_location_tbl %>%
 
 ```
 
-# Chapter 3 Challenges
+#2 Chapter 3 Challenges
 Last compiled: `r Sys.Date()`
 
 This section will cover the challenges provided at the end of Chapter 3.
 
-## Data via API
+##2.1 Data via API
 ```{r tibble3.1}
 #1.0 Load libraries ----
 library(httr)
@@ -165,7 +164,7 @@ library(scales)
     head(10)
 ```
 
-## DB based on Model and Price
+##2.2 DB based on Model and Price
 ```{r tibble3.2}
 #4.0 Read in the HTML for the Entire Webpage
 html <- read_html("https://www.rosebikes.de/fahrr%C3%A4der/kinder")
@@ -190,4 +189,160 @@ tibble(model_name,price) %>%
   head(10)
 ```
 
+#3 Chapter 4 Challenges
+Last compiled: `r Sys.Date()`
 
+This section will cover the challenges provided at the end of Chapter 4.
+```{r data, eval=FALSE}
+#1.0 Loading Libraries ----
+
+library(vroom)
+library(tidyverse)
+library(data.table)
+
+#2.0 Generating Data and Converting to DT ----
+
+#2.1 For patent ----
+
+col_types_patent <- list(
+  id = col_character(),
+  type = col_character(),
+  number = col_character(),
+  country = col_character(),
+  date = col_date("%Y-%m-%d"),
+  abstract = col_character(),
+  title = col_character(),
+  kind = col_character(),
+  num_claims = col_double(),
+  filename = col_character(),
+  withdrawn = col_double()
+)
+
+patent_tb <- vroom(
+  file       = "patent.tsv", 
+  delim      = "\t", 
+  col_types  = col_types_patent,
+  na         = c("", "NA", "NULL")
+)%>% setDT() 
+
+#2.2 For assignee----
+
+col_types_assignee <- list(
+  id = col_character(),
+  type = col_integer(),
+  name_first = col_character(),
+  name_last = col_character(),
+  organization = col_character()
+)
+
+assignee_dt <- vroom(
+  file       = "assignee.tsv", 
+  delim      = "\t", 
+  col_types  = col_types_assignee,
+  na         = c("", "NA", "NULL")
+) %>% setDT()
+
+
+#2.3 For patent_assignee----
+
+col_types_patent_assignee <- list(
+  patent_id = col_character(),
+  assignee_id = col_character(),
+  location_id = col_character()
+)
+
+patent_assignee_dt <- vroom(
+  file       = "patent_assignee.tsv", 
+  delim      = "\t", 
+  col_types  = col_types_patent_assignee,
+  na         = c("", "NA", "NULL")
+) %>% setDT()
+
+#2.4 For uspc----
+
+col_types_uspc <- list(
+  uuid = col_character(),
+  patent_id = col_character(),
+  mainclass_id = col_character(),
+  subclass_id = col_character(),
+  sequence = col_integer()
+  
+)
+
+uspc_tb <- vroom(
+  file       = "uspc.tsv", 
+  delim      = "\t", 
+  col_types  = col_types_uspc,
+  na         = c("", "NA", "NULL")
+) %>% setDT() 
+
+```
+
+##3.1 Patent Dominance
+```{r dt_4.1, eval=FALSE}
+#3.0 Challenge No.1 ----
+
+#Renaming and Merging
+setnames(assignee_dt,"id","assignee_id")
+combined_data_c1 <- merge(x = assignee_dt, y = patent_assignee_dt, 
+                       by    = "assignee_id", 
+                       all.x = TRUE, 
+                       all.y = FALSE)
+#Data Extraction
+challenge_1<-combined_data_c1 [type == 2 & !is.na(organization), .N, by = organization][
+  , max(N), by = organization][
+    order(V1, decreasing = TRUE)] %>% 
+  head(10)
+```
+```{r dt_4.1r}
+challenge_1
+```
+
+
+##3.2 Recent Patent Acitivity
+```{r dt_4.2, eval=FALSE}
+
+#4.0 Challenge No.2 ----
+
+#Renaming and Merging
+patent_2019_tb<- patent_tb[ lubridate::year(date) == "2019"]
+
+setnames(patent_2019_tb,"id","patent_id")
+
+combined_data_c2 <- merge(x = combined_data_c1, y = patent_2019_tb, 
+                          by    = "patent_id", 
+                          all.x = TRUE, 
+                          all.y = FALSE)
+
+#Data Extraction
+challenge_2<-combined_data_c2 [lubridate::year(date) == "2019" & !is.na(organization), .N, by = organization][
+  , max(N), by = organization][
+    order(V1, decreasing = TRUE)] %>% 
+  head(10)
+```
+```{r dt_4.2r}
+challenge_2
+```
+
+##3.3 Innovation in Tech
+
+```{r dt_4.3, eval=FALSE}
+#5.0 Challenge No.3 ----
+
+#Renaming and Merging
+memory.limit(size = 150000) %>% invisible() #due to large vector size
+
+combined_data_c3<-merge(x = combined_data_c1, y = uspc_tb, 
+      by    = "patent_id", 
+      all.x = TRUE, 
+      all.y = FALSE)
+
+#Data Extraction
+challenge_3<-combined_data_c3 [!is.na(patent_id) & !is.na(mainclass_id), .N, by=mainclass_id][
+  , max(N), by = mainclass_id][
+    order(V1, decreasing = TRUE)] %>% 
+  head(5)
+```
+```{r dt_4.3r}
+challenge_3
+```
