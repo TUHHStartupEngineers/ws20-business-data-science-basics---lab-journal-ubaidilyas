@@ -107,7 +107,6 @@ sales_by_state_tbl%>%
 ##1.2 Revenue by Year and Location
 ```{r plot2.2, fig.width=12, fig.height=7}
 
-#6.0 Chapter 2 Challenges ----
 #6.2 Sales by Year and State ----
 sales_by_year_location_tbl<- bike_orderlines_wrangled_tbl %>%
   select(order_date, total_price, location) %>%
@@ -153,9 +152,9 @@ library(rvest)
 library(jsonlite)  
 library(scales)
 
-#2.0 Getting Data via API
+#2.0 Getting Data via API ----
   resp<- GET("https://pokeapi.co/api/v2/ability/?limit=50&offset=20")
-#3.0 Coversion to Tibble
+#3.0 Coversion to Tibble ----
     rawToChar(resp$content) %>%
     fromJSON() %>% 
     .[[4]] %>% 
@@ -166,15 +165,15 @@ library(scales)
 
 ##2.2 DB based on Model and Price
 ```{r tibble3.2}
-#4.0 Read in the HTML for the Entire Webpage
+#4.0 Read in the HTML for the Entire Webpage ----
 html <- read_html("https://www.rosebikes.de/fahrr%C3%A4der/kinder")
-#5.0 Web Scraping for Model Names
+#5.0 Web Scraping for Model Names ----
 model_name <-  html %>% 
   html_nodes(css = ".catalog-product-tile__title") %>%
   html_text() %>%
   stringr::str_replace_all(pattern = "\n\n", replacement = " ") %>%
   stringr::str_extract("(?<=\\n).*(?=\\n)")
-#6.0 Web Scraping for Prices
+#6.0 Web Scraping for Prices ----
 price <-  html %>% 
   html_nodes(css = ".product-tile-price__wrapper") %>%
   html_text()%>%
@@ -184,7 +183,7 @@ price <-  html %>%
          decimal.mark = ",", 
          prefix = "", 
          suffix = " €")
-#7.0 Coversion to Tibble
+#7.0 Coversion to Tibble ----
 tibble(model_name,price) %>% 
   head(10)
 ```
@@ -225,7 +224,7 @@ patent_tb <- vroom(
   na         = c("", "NA", "NULL")
 )%>% setDT() 
 
-#2.2 For assignee----
+#2.2 For assignee ----
 
 col_types_assignee <- list(
   id = col_character(),
@@ -345,4 +344,125 @@ challenge_3<-combined_data_c3 [!is.na(patent_id) & !is.na(mainclass_id), .N, by=
 ```
 ```{r dt_4.3r}
 challenge_3
+```
+
+#4 Chapter 5 Challenges
+Last compiled: `r Sys.Date()`
+
+This section will cover the challenges provided at the end of Chapter 5.
+```{r data5}
+#1.0 Loading Libraries ----
+
+library(tidyverse)
+library(ggplot2)
+library(ggrepel)
+library(lubridate)
+library(ggthemes)
+library(maps)
+library(data.table)
+
+#2.0 Fetching Data
+
+col_covid <- list(
+  dateRep = col_date("%d/%m/%Y"),
+  day = col_double(),
+  month = col_double(),
+  year = col_double(),
+  cases = col_double(),
+  deaths = col_double(),
+  countriesAndTerritories = col_character(),
+  geoId = col_character(),
+  countryterritoryCode = col_character(),
+  popData2019 = col_double(),
+  continentExp = col_character(),
+  `Cumulative_number_for_14_days_of_COVID-19_cases_per_100000` = col_double()
+)
+covid_data_tbl <- read_csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv", col_types = col_covid)
+
+```
+
+##4.1  Cumulative Covid-19
+```{r visual5.1}
+#3.0 Challenge No.1
+#Wrangling Data
+
+covid_data_monthly_tbl<-covid_data_tbl%>%  
+  select(dateRep, cases, countriesAndTerritories, continentExp) %>%
+  mutate(month = month(dateRep)) %>%
+  filter(countriesAndTerritories %in% c("Germany", "United_Kingdom" , "France" , "Spain", "United_States_of_America")) %>%
+  arrange(countriesAndTerritories,year(dateRep),month,date(dateRep))%>%
+  group_by(countriesAndTerritories) %>%
+  mutate(cum_cases=cumsum(cases)) %>%
+  ungroup()
+max_values <- covid_data_monthly_tbl %>% 
+  filter(countriesAndTerritories == "United_States_of_America")%>%
+  slice_max(cum_cases)
+
+#Plotting Data
+covid_data_monthly_tbl %>%    ggplot(aes(x = date(dateRep), y = cum_cases, color = countriesAndTerritories)) +
+  geom_line(size = 1)+
+  expand_limits(y = 3e6) +
+  theme_economist() +
+  theme(
+    legend.position = "bottom" ,
+    plot.title = element_text(face = "bold"),
+    plot.caption = element_text(face = "bold.italic")) +
+  labs(
+    title = "COVID-19 confirmed cases worldwide",
+    subtitle = "As of 11/02/2020 Europe had more cases than USA ",
+    x = "Year 2020",
+    y = "Cumulative Cases",
+    color = "Country"
+  )  + geom_label_repel(aes(x = dateRep, y = cum_cases, label = cum_cases),
+                        data = max_values,
+                        show.legend = F,
+                        size  = 5,
+                        fill  = "#1f78b4",
+                        color = "white",
+                        fontface = "italic")
+```
+
+##4.2  Cumulative Covid-19
+
+```{r visual5.2}
+#4.0 Challenge No.2
+#Wrangling Data
+world <- map_data("world")
+set_data<- covid_data_tbl  %>% 
+  mutate(across(countriesAndTerritories, str_replace_all, "_", " ")) %>%
+  mutate(countriesAndTerritories = case_when(
+    countriesAndTerritories == "United Kingdom" ~ "UK",
+    countriesAndTerritories == "United States of America" ~ "USA",
+    countriesAndTerritories == "Czechia" ~ "Czech Republic",
+    TRUE ~ countriesAndTerritories
+    
+  ))
+setnames(set_data,"countriesAndTerritories","region")
+covid_deathrate_tbl<-set_data %>%  
+  select(deaths, region, popData2019) %>%
+  group_by(region) %>%
+  mutate(death_rate=(sum(deaths)/popData2019)) %>%
+  ungroup() 
+covid_data_deathrate_tbl<-aggregate(x= covid_deathrate_tbl$death_rate,
+          by= list(covid_deathrate_tbl$region),
+          FUN=max)
+setnames(covid_data_deathrate_tbl,"Group.1","region")
+setnames(covid_data_deathrate_tbl,"x","death_rate")
+
+#Plotting Data
+plot_data<-merge(x = world, y = covid_data_deathrate_tbl, 
+                 by    = "region", 
+                 all.x = TRUE, 
+                 all.y = FALSE)
+
+ggplot(plot_data, aes(fill = death_rate)) +
+  geom_map(aes(map_id = region), map = world)+
+  scale_fill_gradient(low = "#ee4540", high = "#2d142c", labels = scales::percent)+
+  expand_limits(x = plot_data$long, y = plot_data$lat)+
+  labs(
+    title = "Confirmed COVID-19 deaths relative to size of the population",
+    subtitle = "More than 1.2 Million confirmed COVID-19 deaths worldwide ",
+    x = "Longitude",
+    y = "Latitude"
+  )
 ```
