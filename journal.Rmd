@@ -21,7 +21,7 @@ knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 This is an `.Rmd` file. It is plain text with special features. Any time you write just like this, it will be compiled to normal text in the website. If you put a \# in front of your text, it will create a top level-header.
 
 
-#1 Chapter 2 Challenges
+#Chapter 2 Challenges
 
 Last compiled: `r Sys.Date()`
 
@@ -65,7 +65,7 @@ bike_orderlines_wrangled_tbl <- bike_orderlines_joined_tbl %>%
   set_names(names(.) %>% str_replace_all("\\.", "_"))
 ```
 
-##1.1 Bar Graph for Sales by Location
+##Bar Graph for Sales by Location
 
 
 ```{r plot2.1, fig.width=12, fig.height=7}
@@ -104,7 +104,7 @@ sales_by_state_tbl%>%
 ```
 
 
-##1.2 Revenue by Year and Location
+##Revenue by Year and Location
 ```{r plot2.2, fig.width=12, fig.height=7}
 
 #6.2 Sales by Year and State ----
@@ -137,12 +137,12 @@ sales_by_year_location_tbl %>%
 
 ```
 
-#2 Chapter 3 Challenges
+#Chapter 3 Challenges
 Last compiled: `r Sys.Date()`
 
 This section will cover the challenges provided at the end of Chapter 3.
 
-##2.1 Data via API
+##Data via API
 ```{r tibble3.1}
 #1.0 Load libraries ----
 library(httr)
@@ -163,7 +163,7 @@ library(scales)
     head(10)
 ```
 
-##2.2 DB based on Model and Price
+##DB based on Model and Price
 ```{r tibble3.2}
 #4.0 Read in the HTML for the Entire Webpage ----
 html <- read_html("https://www.rosebikes.de/fahrr%C3%A4der/kinder")
@@ -188,7 +188,7 @@ tibble(model_name,price) %>%
   head(10)
 ```
 
-#3 Chapter 4 Challenges
+#Chapter 4 Challenges
 Last compiled: `r Sys.Date()`
 
 This section will cover the challenges provided at the end of Chapter 4.
@@ -277,7 +277,7 @@ uspc_tb <- vroom(
 
 ```
 
-##3.1 Patent Dominance
+##Patent Dominance
 ```{r dt_4.1, eval=FALSE}
 #3.0 Challenge No.1 ----
 
@@ -298,7 +298,7 @@ challenge_1
 ```
 
 
-##3.2 Recent Patent Acitivity
+##Recent Patent Acitivity
 ```{r dt_4.2, eval=FALSE}
 
 #4.0 Challenge No.2 ----
@@ -323,7 +323,7 @@ challenge_2<-combined_data_c2 [lubridate::year(date) == "2019" & !is.na(organiza
 challenge_2
 ```
 
-##3.3 Innovation in Tech
+##Innovation in Tech
 
 ```{r dt_4.3, eval=FALSE}
 #5.0 Challenge No.3 ----
@@ -346,7 +346,7 @@ challenge_3<-combined_data_c3 [!is.na(patent_id) & !is.na(mainclass_id), .N, by=
 challenge_3
 ```
 
-#4 Chapter 5 Challenges
+#Chapter 5 Challenges
 Last compiled: `r Sys.Date()`
 
 This section will cover the challenges provided at the end of Chapter 5.
@@ -381,7 +381,7 @@ covid_data_tbl <- read_csv("https://opendata.ecdc.europa.eu/covid19/casedistribu
 
 ```
 
-##4.1  Cumulative Covid-19
+##Cumulative Covid-19
 ```{r visual5.1}
 #3.0 Challenge No.1
 #Wrangling Data
@@ -422,7 +422,7 @@ covid_data_monthly_tbl %>%    ggplot(aes(x = date(dateRep), y = cum_cases, color
                         fontface = "italic")
 ```
 
-##4.2  Cumulative Covid-19
+##Cumulative Covid-19
 
 ```{r visual5.2}
 #4.0 Challenge No.2
