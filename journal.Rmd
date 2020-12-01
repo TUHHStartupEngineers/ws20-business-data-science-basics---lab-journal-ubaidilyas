@@ -453,7 +453,7 @@ plot_data<-merge(x = world, y = covid_data_deathrate_tbl,
 
 ggplot(plot_data, aes(fill = death_rate)) +
   geom_map(aes(map_id = region), map = world)+
-  scale_fill_gradient(low = "#ee4540", high = "#2d142c", labels = scales::percent)+
+  scale_fill_gradient(low = "#1f78b4", high = "#2d142c", labels = scales::percent)+
   expand_limits(x = plot_data$long, y = plot_data$lat)+
   labs(
     title = "Confirmed COVID-19 deaths relative to size of the population",
