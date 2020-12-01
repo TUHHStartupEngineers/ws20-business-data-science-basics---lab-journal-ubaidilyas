@@ -76,7 +76,7 @@ setnames(set_data,"countriesAndTerritories","region")
 covid_deathrate_tbl<-set_data %>%  
   select(deaths, region, popData2019) %>%
   group_by(region) %>%
-  mutate(death_rate=(sum(deaths)/popData2019)*100) %>%
+  mutate(death_rate=(sum(deaths)/popData2019)) %>%
   ungroup() 
 covid_data_deathrate_tbl<-aggregate(x= covid_deathrate_tbl$death_rate,
           by= list(covid_deathrate_tbl$region),
@@ -87,14 +87,11 @@ setnames(covid_data_deathrate_tbl,"x","death_rate")
 plot_data<-merge(x = world, y = covid_data_deathrate_tbl, 
                  by    = "region", 
                  all.x = TRUE, 
-                 all.y = FALSE) %>% mutate(death_rate = scales::dollar(death_rate, 
-                                                                       big.mark     = ".", 
-                                                                       decimal.mark = ",", 
-                                                                       prefix       = "", 
-                                                                       suffix       = " %"))
+                 all.y = FALSE)
 
 ggplot(plot_data, aes(fill = death_rate)) +
   geom_map(aes(map_id = region), map = world)+
+  scale_fill_gradient(low = "#ee4540", high = "#2d142c", labels = scales::percent)+
   expand_limits(x = plot_data$long, y = plot_data$lat)+
   labs(
     title = "Confirmed COVID-19 deaths relative to size of the population",
@@ -102,3 +99,12 @@ ggplot(plot_data, aes(fill = death_rate)) +
     x = "Longitude",
     y = "Latitude"
   )
+
+
++
+  scale_fill_gradient(low = "#ee4540", high = "#2d142c", labels = scales::percent)
+
+plot_data %>% ggplot(aes(long, lat)) +
+  geom_map(aes(map_id = region, fill = death_rate), map = world, color = "grey", size = 0.1) +
+
+    
