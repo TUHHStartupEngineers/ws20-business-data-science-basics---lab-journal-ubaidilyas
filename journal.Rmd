@@ -310,7 +310,7 @@ combined_data_c2 <- merge(x = combined_data_c1, y = patent_2019_tb,
                           all.y = FALSE)
 
 #Data Extraction
-challenge_2<-combined_data_c2 [lubridate::year(date) == "2019" & !is.na(organization), .N, by = organization][
+challenge_2<-combined_data_c2 [lubridate::year(date) == "2019" & type.x == 2 & !is.na(organization), .N, by = organization][
   , max(N), by = organization][
     order(V1, decreasing = TRUE)] %>% 
   head(10)
