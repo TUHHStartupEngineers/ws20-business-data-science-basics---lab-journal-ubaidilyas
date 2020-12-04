@@ -165,20 +165,20 @@ library(scales)
 html <- read_html("https://www.rosebikes.de/fahrr%C3%A4der/kinder")
 #5.0 Web Scraping for Model Names ----
 model_name <-  html %>% 
-  html_nodes(css = ".catalog-product-tile__title") %>%
+  html_nodes(css = ".product-tile__title") %>%
   html_text() %>%
   stringr::str_replace_all(pattern = "\n\n", replacement = " ") %>%
   stringr::str_extract("(?<=\\n).*(?=\\n)")
 #6.0 Web Scraping for Prices ----
 price <-  html %>% 
-  html_nodes(css = ".product-tile-price__wrapper") %>%
+  html_nodes(css = ".product-tile-price__current-value") %>%
   html_text()%>%
   stringr::str_extract(pattern = "[0-9]+") %>% 
   as.numeric() %>%
   dollar(big.mark = ".", 
          decimal.mark = ",", 
          prefix = "", 
-         suffix = " €")
+         suffix = " EUR")
 #7.0 Coversion to Tibble ----
 tibble(model_name,price) %>% 
   head(10)
@@ -188,12 +188,16 @@ tibble(model_name,price) %>%
 Last compiled: `r Sys.Date()`
 
 This section will cover the challenges provided at the end of Chapter 4.
-```{r data, eval=FALSE}
+```{r chap4_libr}
 #1.0 Loading Libraries ----
 
 library(vroom)
 library(tidyverse)
+library(readr)
 library(data.table)
+```
+
+```{r data, eval=FALSE}
 
 #2.0 Generating Data and Converting to DT ----
 
@@ -284,13 +288,16 @@ combined_data_c1 <- merge(x = assignee_dt, y = patent_assignee_dt,
                        all.x = TRUE, 
                        all.y = FALSE)
 #Data Extraction
-challenge_1<-combined_data_c1 [type == 2 & !is.na(organization), .N, by = organization][
+challenge_1<-combined_data_c1 [type == 2 & !is.na(organization) & !is.na(patent_id) , .N, by = organization][
   , max(N), by = organization][
     order(V1, decreasing = TRUE)] %>% 
   head(10)
+write_rds(challenge_1 , "challenge_1.rds")
+
 ```
 ```{r dt_4.1r}
-challenge_1
+c1_result<-read_rds("challenge_1.rds")
+c1_result
 ```
 
 
@@ -314,9 +321,13 @@ challenge_2<-combined_data_c2 [lubridate::year(date) == "2019" & type.x == 2 & !
   , max(N), by = organization][
     order(V1, decreasing = TRUE)] %>% 
   head(10)
+write_rds(challenge_2, "challenge_2.rds")
+
 ```
 ```{r dt_4.2r}
-challenge_2
+c2_result<-read_rds("challenge_2.rds")
+c2_result
+
 ```
 
 ## Innovation in Tech
@@ -337,9 +348,11 @@ challenge_3<-combined_data_c3 [!is.na(patent_id) & !is.na(mainclass_id), .N, by=
   , max(N), by = mainclass_id][
     order(V1, decreasing = TRUE)] %>% 
   head(5)
+write_rds(challenge_3, "challenge_3.rds")
 ```
 ```{r dt_4.3r}
-challenge_3
+c3_result<-read_rds("challenge_3.rds")
+c3_result
 ```
 
 # Chapter 5 Challenges
