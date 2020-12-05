@@ -391,7 +391,7 @@ covid_data_tbl <- read_csv("https://opendata.ecdc.europa.eu/covid19/casedistribu
 ```
 
 ## Cumulative Covid-19
-```{r visual5.1}
+```{r visual5.1, fig.width=12, fig.height=7}
 #3.0 Challenge No.1
 #Wrangling Data
 
@@ -433,7 +433,7 @@ covid_data_monthly_tbl %>%    ggplot(aes(x = date(dateRep), y = cum_cases, color
 
 ## Cumulative Covid-19
 
-```{r visual5.2}
+```{r visual5.2, fig.width=12, fig.height=7}
 #4.0 Challenge No.2
 #Wrangling Data
 world <- map_data("world")
